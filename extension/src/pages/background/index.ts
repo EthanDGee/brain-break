@@ -111,3 +111,40 @@ chrome.runtime.onStartup.addListener(() => run(refresh));
 chrome.runtime.onInstalled.addListener(() => run(refresh));
 
 run(refresh);
+
+
+// --- Daily limits -------------------------------------------------------------
+// Webpages ask "am I allowed?" here. We save the current session first so the
+// server's total is up to date, then ask the server.
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type !== 'check-limit') return;
+  run(checkpoint);
+  chain
+    .then(() => fetch(`${API}/check?domain=${encodeURIComponent(msg.domain)}`))
+    .then((r) => (r as Response).json())
+    .then(sendResponse)
+    .catch(() => sendResponse(null)); // server down → don't block
+  return true; // we'll answer asynchronously
+});
+
+
+// --- Employer focus filters ------------------------------------------------
+// The employer turns Grayscale / Block Shorts & Reels on or off in the admin
+// dashboard. We copy those settings into extension storage, and the content
+// script on every page applies them instantly.
+async function syncPolicy() {
+  try {
+    const res = await fetch(`${API}/policy`);
+    if (!res.ok) return;
+    const p = await res.json();
+    await chrome.storage.local.set({ grayscale: !!p.grayscale, blockReels: !!p.block_reels });
+  } catch {
+    // Server unreachable: keep the last known settings.
+  }
+}
+
+chrome.alarms.onAlarm.addListener((a) => {
+  if (a.name === 'checkpoint') syncPolicy(); // every minute
+});
+chrome.tabs.onActivated.addListener(() => syncPolicy()); // and whenever you switch tabs
+syncPolicy();

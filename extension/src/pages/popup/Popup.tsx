@@ -11,7 +11,7 @@ interface UsageEvent {
   duration: number; // seconds
 }
 
-/* Category names + colors. Order = stacking order (bottom → top). */
+/* Category names + colors */
 const CATEGORIES: { id: CategoryId; label: string; color: string }[] = [
   { id: 'social', label: 'Social Media', color: '#3B82F6' },
   { id: 'shopping', label: 'Shopping', color: '#EC4899' },
@@ -137,16 +137,6 @@ export default function Popup() {
       .catch(() => setStatus('error'));
   }, []);
 
-  // Change a site's category: update the screen right away, then save it.
-  function changeCategory(domain: string, category: CategoryId) {
-    setEvents((evts) => evts.map((e) => (e.domain === domain ? { ...e, category } : e)));
-    fetch(`${API}/categories`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ domain, category }),
-    }).catch(() => setStatus('error'));
-  }
-
   const today = startOfDay(Date.now());
   const [day, setDay] = useState(today);
 
@@ -269,16 +259,9 @@ export default function Popup() {
                 <div className="h-1 flex-1 rounded-full bg-zinc-700">
                   <div className="h-1 rounded-full" style={{ width: `${(s.seconds / topSite) * 100}%`, background: COLOR[s.category] }} />
                 </div>
-                {/* Pick a category for this site */}
-                <select
-                  value={s.category}
-                  onChange={(e) => changeCategory(s.domain, e.target.value as CategoryId)}
-                  className="shrink-0 cursor-pointer rounded bg-zinc-700 px-1 py-0.5 text-[10px] text-zinc-300 outline-none hover:bg-zinc-600"
-                >
-                  {CATEGORIES.map((c) => (
-                    <option key={c.id} value={c.id}>{c.label}</option>
-                  ))}
-                </select>
+                <span className="shrink-0 text-[10px] text-zinc-400">
+                  {CATEGORIES.find((c) => c.id === s.category)?.label}
+                </span>
               </div>
             </div>
           </div>
