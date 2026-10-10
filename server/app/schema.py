@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS history (
     user INTEGER REFERENCES user (id),
     domain INTEGER REFERENCES domain (id),
     url TEXT NOT NULL,
-    title TEXT,
     visited_at TEXT NOT NULL DEFAULT (datetime('now')),
     duration_seconds INTEGER NOT NULL DEFAULT 0
 );
