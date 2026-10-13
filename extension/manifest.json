@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "name in manifest.json",
-  "description": "description in manifest.json",
+  "name": "Brain Break",
+  "description": "See how much time you spend on each website.",
   "options_ui": {
     "page": "src/pages/options/index.html"
   },
@@ -11,39 +11,30 @@
       "32": "icon-32.png"
     }
   },
+  "background": {
+    "service_worker": "src/pages/background/index.ts",
+    "type": "module"
+  },
   "chrome_url_overrides": {
     "newtab": "src/pages/newtab/index.html"
   },
   "icons": {
     "128": "icon-128.png"
   },
-  "permissions": [
-    "activeTab"
-  ],
-  "content_scripts": [
-    {
-      "matches": [
-        "http://*/*",
-        "https://*/*",
-        "<all_urls>"
-      ],
-      "js": [
-        "src/pages/content/index.tsx"
-      ],
-      "css": [
-        "contentStyle.css"
-      ]
-    }
-  ],
+  "permissions": ["tabs", "idle", "alarms", "storage"],
+  "host_permissions": ["http://localhost:8000/*"],
   "devtools_page": "src/pages/devtools/index.html",
   "web_accessible_resources": [
     {
-      "resources": [
-        "contentStyle.css",
-        "icon-128.png",
-        "icon-32.png"
-      ],
+      "resources": ["icon-128.png", "icon-32.png"],
       "matches": []
     }
+  ],
+  "content_scripts": [
+  {
+    "matches": ["http://*/*", "https://*/*"],
+    "js": ["src/pages/content/index.tsx"],
+    "run_at": "document_start"
+  }
   ]
 }
